@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+# Copyright thomas dot braun aeht virtuell minus zuhause dot de,  2013
+#
+# A hook script to check that the to-be-commited files are valid
+# filenames on a windows platform.
+# Sources:
+# - http://stackoverflow.com/a/62888
+# - http://msdn.microsoft.com/en-us/library/aa365247.aspx
+#
+# To enable this hook, rename this file to "pre-commit", move it to ".git/hook" and make it executable.
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=
+fi
+
+enforcecompatiblefilenames=$(git config hooks.enforcecompatiblefilenames)
+
+# Redirect output to stderr.
+exec 1>&2
+
+if test "$enforcecompatiblefilenames" != "true"
+then
+  exit 0
+fi
+
+git diff --cached --name-only --diff-filter=A -z $against | while IFS= read -r -d '' filename; do
+  # Non-printable characters from ASCII range 0-31 
+  nonprintablechars=$(echo -n "$filename" | LC_ALL=C tr -d '[ -~]' | wc -c)
+
+  # Illegal characters: < > : " / \ | ? *
+  # We don't test for / (forward slash) here as that is even on *nix not allowed in *filename*
+  illegalchars=$(echo -n "$filename" | LC_ALL=C grep -E '(<|>|:|"|\\|\||\?|\*)' | wc -c)
+
+  # Reserved names plus possible extension
+  # CON, PRN, AUX, NUL, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
+  reservednames=$(echo -n "$filename" | LC_ALL=C grep -i -E '(CON|PRN|AUX|NUL|COM1|COM2|COM3|COM4|COM5|COM6|COM7|COM8|COM9|LPT1|LPT2|LPT3|LPT4|LPT5|LPT6|LPT7|LPT8|LPT9).[a-z]{3}' | wc -c)
+
+  # No trailing period or space
+  trailingperiodorspace=$(echo -n "$filename" | LC_ALL=C grep -E '(\.| )$' | wc -c)
+
+  # File name is all periods
+  filenameallperiods=$(echo -n "$filename" | LC_ALL=C grep -E '^\.+$' | wc -c)
+
+  # Check complete path length to be smaller than 260 characters
+  # This test can not be really accurate as we don't know if PWD on the windows filesystem itself is not very long 
+  absolutepathtoolong=0
+  if test $(echo "$filename" | wc -c) -ge 260
+  then
+    absolutepathtoolong=1
+  fi
+
+  # debug output
+  if test -n "$GIT_TRACE"
+  then
+    echo "File: ${filename}"
+    echo nonprintablechars=$nonprintablechars
+    echo illegalchars=$illegalchars
+    echo reservednames=$reservednames
+    echo trailingperiodorspace=$trailingperiodorspace
+    echo filenameallperiods=$filenameallperiods
+    echo absolutepathtoolong=$absolutepathtoolong
+  fi
+
+  if test $nonprintablechars -ne 0 \
+     || test $illegalchars -ne 0 \
+     || test $reservednames -ne 0 \
+     || test $trailingperiodorspace -ne 0 \
+     || test $filenameallperiods -ne 0 \
+     || test $absolutepathtoolong -ne 0
+  then
+    echo "Error: Attempt to add a file name which is incompatible to windows file systems."
+    echo
+    echo "If you know what you are doing you can disable this"
+    echo "check using:"
+    echo
+    echo "git config hooks.enforcecompatiblefilenames false"
+    echo
+    exit 1
+  fi
+done
+
