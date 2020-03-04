@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Licensed under 3-Clause BSD, see License.txt
+#
 # Copyright byte physics and contributors,  2013-2020
 #
 # A hook script to check that the to-be-commited files are valid

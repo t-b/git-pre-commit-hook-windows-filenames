@@ -1,5 +1,7 @@
 #!/bin/sh
-
+#
+# Licensed under 3-Clause BSD, see License.txt
+#
 # test suite for hook
 
 cp pre-commit .git/hooks
