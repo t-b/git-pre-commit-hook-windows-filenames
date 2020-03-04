@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright thomas dot braun aeht virtuell minus zuhause dot de,  2013
+# Copyright byte physics and contributors,  2013-2020
 #
 # A hook script to check that the to-be-commited files are valid
 # filenames on a windows platform.

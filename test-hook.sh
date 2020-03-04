@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# Copyright thomas dot braun aeht virtuell minus zuhause dot de,  2013
-#
 # test suite for hook
 
 cp pre-commit .git/hooks
