@@ -1,7 +1,7 @@
 ## Installation
 Copy the file pre-commit to .git/hooks and make it executable.
 
-By executing 
+By executing
 ```sh
 git config hooks.enforcecompatiblefilenames true
 ```
