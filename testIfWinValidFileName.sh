@@ -1,3 +1,14 @@
+concatCause() #https://www.shellscript.sh/functions.html 
+{
+  currCause=$1
+  if test "$cause" = "" ;then
+    cause=$currCause
+  else
+    #see https://linuxize.com/post/bash-concatenate-strings/
+    cause=$cause", "$currCause
+  fi
+}
+
 #testIfWinValidFileName () {
   echo "File name: $1"
   filename=$1
@@ -41,32 +52,33 @@
   cause=""
   if test $nonprintablechars -ne 0
    then
-    cause="non-printable chars"
+    concatCause "non-printable chars"
   fi
   if test $illegalchars -ne 0
    then
-    cause="illegal characters (1 of <>:\"\|?*)"
+    concatCause "illegal characters (1 of <>:\"\|?*)"
   fi
   if test $reservednames -ne 0
    then
-    cause="reserved names"
+    concatCause "reserved names"
   fi
   if test $trailingperiodorspace -ne 0
    then
-    cause="trailing period or space"
+    concatCause "trailing period or space"
   fi
   if test $filenameallperiods -ne 0
    then
-    cause="file name all periods"
+    concatCause "file name all periods"
   fi 
   if test $absolutepathtoolong -ne 0
    then
-    cause="absolute path too long"
+    concatCause "absolute path too long"
   fi
   if test "$cause" != ""
   then
   #else
-    echo "Error: file name is incompatible to MS Windows file systems:" $cause 
+    echo "Error: file name is incompatible to MS Windows file systems:"
+    echo $cause 
     exit 1
   fi
   exit 0
